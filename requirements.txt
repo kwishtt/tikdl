@@ -1,0 +1,4 @@
+# Cài đặt: pip install -r requirements.txt
+
+typer[all]>=0.9.0
+rich>=13.0.0
