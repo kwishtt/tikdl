@@ -194,23 +194,140 @@ class TempMail:
         return ""
 
 
-# ========== SELENIUM FUNCTIONS ==========
+# Random User Agents
+USER_AGENTS = [
+    # Windows Chrome
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+    # Windows Firefox
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:121.0) Gecko/20100101 Firefox/121.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0",
+    # Windows Edge
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 Edg/120.0.0.0",
+    # Mac Chrome
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36",
+    # Mac Safari
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Safari/605.1.15",
+    # Linux Chrome
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+]
+
+# Thư mục lưu temp profiles
+PROFILES_DIR = Path(__file__).parent / "chrome_profiles"
+
+
+def create_fresh_profile() -> Path:
+    """Tạo Chrome profile mới sạch"""
+    PROFILES_DIR.mkdir(exist_ok=True)
+    
+    # Tạo tên profile unique
+    profile_name = f"profile_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{random.randint(1000, 9999)}"
+    profile_path = PROFILES_DIR / profile_name
+    profile_path.mkdir(exist_ok=True)
+    
+    console.print(f"[dim]New profile: {profile_name}[/dim]")
+    return profile_path
+
+
+def cleanup_old_profiles():
+    """Xóa các profiles cũ (giữ 5 profiles gần nhất)"""
+    if not PROFILES_DIR.exists():
+        return
+    
+    profiles = sorted(PROFILES_DIR.iterdir(), key=lambda x: x.stat().st_mtime, reverse=True)
+    
+    # Xóa profiles cũ, giữ 5 cái mới nhất
+    for profile in profiles[5:]:
+        try:
+            import shutil
+            shutil.rmtree(profile)
+            console.print(f"[dim]Đã xóa profile cũ: {profile.name}[/dim]")
+        except Exception:
+            pass
+
+
 def create_driver() -> webdriver.Chrome:
-    """Tạo Chrome driver"""
+    """Tạo Chrome driver với fresh profile và random fingerprint"""
     options = Options()
     
+    # Tạo profile mới sạch
+    profile_path = create_fresh_profile()
+    options.add_argument(f"--user-data-dir={profile_path}")
+    
+    # Random user agent
+    user_agent = random.choice(USER_AGENTS)
+    console.print(f"[dim]User-Agent: {user_agent[:50]}...[/dim]")
+    
+    # Anti-detection
     options.add_argument("--disable-blink-features=AutomationControlled")
     options.add_experimental_option("excludeSwitches", ["enable-automation"])
     options.add_experimental_option("useAutomationExtension", False)
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--window-size=1920,1080")
+    
+    # Random window size
+    widths = [1366, 1440, 1536, 1600, 1920]
+    heights = [768, 900, 864, 900, 1080]
+    idx = random.randint(0, len(widths) - 1)
+    window_size = f"--window-size={widths[idx]},{heights[idx]}"
+    options.add_argument(window_size)
+    
     options.add_argument("--start-maximized")
-    options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+    options.add_argument(f"--user-agent={user_agent}")
+    
+    # Thêm các flags để tránh fingerprinting
+    options.add_argument("--disable-web-security")
+    options.add_argument("--disable-features=IsolateOrigins,site-per-process")
+    options.add_argument("--disable-site-isolation-trials")
+    
+    # Random language
+    languages = ["en-US,en", "en-GB,en", "vi-VN,vi,en"]
+    options.add_argument(f"--lang={random.choice(languages)}")
+    
+    # Disable webrtc leak
+    options.add_argument("--disable-webrtc")
+    
+    # Disable cache
+    options.add_argument("--disable-application-cache")
+    options.add_argument("--disable-cache")
     
     service = Service(ChromeDriverManager().install())
     driver = webdriver.Chrome(service=service, options=options)
-    driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+    
+    # Inject scripts để fake fingerprint
+    try:
+        driver.execute_cdp_cmd('Network.setUserAgentOverride', {
+            "userAgent": user_agent,
+            "platform": "Win32" if "Windows" in user_agent else "MacIntel" if "Mac" in user_agent else "Linux x86_64"
+        })
+    except Exception:
+        pass
+    
+    # Override navigator properties
+    driver.execute_script("""
+        Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+        Object.defineProperty(navigator, 'plugins', {get: () => [1, 2, 3, 4, 5]});
+        Object.defineProperty(navigator, 'languages', {get: () => ['en-US', 'en']});
+        
+        // Fake canvas fingerprint
+        const originalToDataURL = HTMLCanvasElement.prototype.toDataURL;
+        HTMLCanvasElement.prototype.toDataURL = function(type) {
+            if (type === 'image/png' && this.width === 16 && this.height === 16) {
+                return 'data:image/png;base64,fake';
+            }
+            return originalToDataURL.apply(this, arguments);
+        };
+        
+        // Fake WebGL
+        const getParameter = WebGLRenderingContext.prototype.getParameter;
+        WebGLRenderingContext.prototype.getParameter = function(parameter) {
+            if (parameter === 37445) return 'Intel Inc.';
+            if (parameter === 37446) return 'Intel Iris OpenGL Engine';
+            return getParameter.apply(this, arguments);
+        };
+    """)
     
     return driver
 
@@ -251,9 +368,9 @@ def save_account(email: str, password: str) -> None:
 
 
 def random_password() -> str:
-    """Tạo password ngẫu nhiên"""
-    chars = string.ascii_letters + string.digits + "!@#$%"
-    return ''.join(random.choices(chars, k=12))
+    """Tạo password theo format DinhKhue@<random_number>"""
+    num = random.randint(1000, 9999)
+    return f"DinhKhue@{num}"
 
 
 def random_username() -> str:
@@ -286,40 +403,91 @@ def register_tiktok(temp_mail: TempMail) -> bool:
         
         # Vào trang đăng ký
         driver.get("https://www.tiktok.com/signup/phone-or-email/email")
-        time.sleep(3)
+        time.sleep(5)
         
-        # Chọn ngày sinh
+        # Chọn ngày sinh - Click dropdown rồi chọn từ list
         console.print("[dim]Chọn ngày sinh...[/dim]")
         year, month, day = random_birthday()
         
+        month_names = ['January', 'February', 'March', 'April', 'May', 'June',
+                      'July', 'August', 'September', 'October', 'November', 'December']
+        
+        birthday_selected = False
+        
         try:
-            # Month
-            month_select = wait.until(EC.presence_of_element_located(
-                (By.CSS_SELECTOR, 'select[placeholder="Month"], [data-e2e="month-select"]')
-            ))
-            month_select.click()
-            time.sleep(0.5)
-            month_option = driver.find_element(By.XPATH, f'//option[@value="{month}"]')
-            month_option.click()
+            # Tìm 3 dropdown boxes (Month, Day, Year)
+            # Thường có placeholder hoặc text "Month", "Day", "Year"
             
-            # Day
-            day_select = driver.find_element(By.CSS_SELECTOR, 'select[placeholder="Day"], [data-e2e="day-select"]')
-            day_select.click()
-            time.sleep(0.5)
-            day_option = driver.find_element(By.XPATH, f'//option[@value="{day}"]')
-            day_option.click()
+            # === MONTH ===
+            console.print(f"[dim]Chọn tháng: {month_names[month-1]}[/dim]")
+            try:
+                # Click vào dropdown Month
+                month_dropdown = driver.find_element(By.XPATH, 
+                    '//*[contains(text(), "Month")] | //*[@placeholder="Month"]'
+                )
+                month_dropdown.click()
+                time.sleep(0.5)
+                
+                # Chọn tháng từ list
+                month_option = driver.find_element(By.XPATH, 
+                    f'//div[text()="{month_names[month-1]}"] | //span[text()="{month_names[month-1]}"] | //li[text()="{month_names[month-1]}"]'
+                )
+                month_option.click()
+                console.print(f"[green]Đã chọn tháng: {month_names[month-1]}[/green]")
+                time.sleep(0.5)
+            except Exception as e:
+                console.print(f"[yellow]Lỗi chọn tháng: {e}[/yellow]")
             
-            # Year
-            year_select = driver.find_element(By.CSS_SELECTOR, 'select[placeholder="Year"], [data-e2e="year-select"]')
-            year_select.click()
-            time.sleep(0.5)
-            year_option = driver.find_element(By.XPATH, f'//option[@value="{year}"]')
-            year_option.click()
+            # === DAY ===
+            console.print(f"[dim]Chọn ngày: {day}[/dim]")
+            try:
+                # Click vào dropdown Day
+                day_dropdown = driver.find_element(By.XPATH, 
+                    '//*[contains(text(), "Day")] | //*[@placeholder="Day"]'
+                )
+                day_dropdown.click()
+                time.sleep(0.5)
+                
+                # Chọn ngày từ list
+                day_option = driver.find_element(By.XPATH, 
+                    f'//div[text()="{day}"] | //span[text()="{day}"] | //li[text()="{day}"]'
+                )
+                day_option.click()
+                console.print(f"[green]Đã chọn ngày: {day}[/green]")
+                time.sleep(0.5)
+            except Exception as e:
+                console.print(f"[yellow]Lỗi chọn ngày: {e}[/yellow]")
+            
+            # === YEAR ===
+            console.print(f"[dim]Chọn năm: {year}[/dim]")
+            try:
+                # Click vào dropdown Year
+                year_dropdown = driver.find_element(By.XPATH, 
+                    '//*[contains(text(), "Year")] | //*[@placeholder="Year"]'
+                )
+                year_dropdown.click()
+                time.sleep(0.5)
+                
+                # Chọn năm từ list
+                year_option = driver.find_element(By.XPATH, 
+                    f'//div[text()="{year}"] | //span[text()="{year}"] | //li[text()="{year}"]'
+                )
+                year_option.click()
+                console.print(f"[green]Đã chọn năm: {year}[/green]")
+                time.sleep(0.5)
+            except Exception as e:
+                console.print(f"[yellow]Lỗi chọn năm: {e}[/yellow]")
+            
+            birthday_selected = True
             
         except Exception as e:
             console.print(f"[yellow]Lỗi chọn ngày sinh: {e}[/yellow]")
-            console.print("[yellow]Vui lòng chọn ngày sinh thủ công...[/yellow]")
-            input("Nhấn Enter sau khi chọn xong...")
+        
+        # Nếu không tự động được, hỏi thủ công
+        if not birthday_selected:
+            console.print("[yellow]Không tự động chọn được ngày sinh[/yellow]")
+            console.print("[yellow]Vui lòng chọn ngày sinh thủ công trong browser...[/yellow]")
+            input("Nhấn Enter sau khi chọn xong ngày sinh...")
         
         time.sleep(1)
         
@@ -350,47 +518,138 @@ def register_tiktok(temp_mail: TempMail) -> bool:
         except Exception as e:
             console.print(f"[yellow]Lỗi nhập password: {e}[/yellow]")
         
-        time.sleep(1)
+        time.sleep(2)
         
-        # Click gửi code
-        console.print("[dim]Click gửi mã xác thực...[/dim]")
+        # Thử click Send code
+        console.print("[dim]Đang tìm nút Send code...[/dim]")
+        send_clicked = False
+        
+        # Tìm tất cả elements có thể là nút Send code
         try:
-            send_code_btn = driver.find_element(By.XPATH, 
-                '//button[contains(text(), "Send code")] | //button[contains(text(), "Gửi mã")]'
-            )
-            send_code_btn.click()
-        except Exception:
-            console.print("[yellow]Không tìm thấy nút Send code, thử click Next...[/yellow]")
+            # Cách 1: Tìm bằng text
+            all_elements = driver.find_elements(By.XPATH, '//*[contains(text(), "Send code") or contains(text(), "send code")]')
+            console.print(f"[dim]Tìm thấy {len(all_elements)} elements chứa 'Send code'[/dim]")
+            
+            for elem in all_elements:
+                try:
+                    if elem.is_displayed():
+                        driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", elem)
+                        time.sleep(0.3)
+                        driver.execute_script("arguments[0].click();", elem)
+                        console.print(f"[green]Đã JS click: {elem.tag_name}[/green]")
+                        send_clicked = True
+                        time.sleep(2)
+                        break
+                except Exception:
+                    continue
+            
+            # Cách 2: Tìm theo CSS class
+            if not send_clicked:
+                css_selectors = [
+                    '[class*="sendCode"]',
+                    '[class*="send-code"]',
+                    '[data-e2e*="send"]',
+                    'a[href*="send"]',
+                ]
+                for css in css_selectors:
+                    try:
+                        elem = driver.find_element(By.CSS_SELECTOR, css)
+                        if elem.is_displayed():
+                            driver.execute_script("arguments[0].click();", elem)
+                            console.print(f"[green]Đã click (CSS): {css}[/green]")
+                            send_clicked = True
+                            time.sleep(2)
+                            break
+                    except Exception:
+                        continue
+                        
+        except Exception as e:
+            console.print(f"[dim]Lỗi: {e}[/dim]")
+        
+        if send_clicked:
+            console.print("[green]✓ Đã gửi code[/green]")
+        else:
+            console.print("[yellow]⚠ Không click được Send code tự động[/yellow]")
+        
+        # Chờ và detect CAPTCHA/rate limit tự động
+        console.print("[dim]Chờ xử lý (CAPTCHA nếu có)...[/dim]")
+        
+        for wait_time in range(30):  # Chờ tối đa 30s
+            time.sleep(1)
+            page_text = driver.page_source.lower()
+            
+            # Check rate limit
+            if "maximum" in page_text and "attempts" in page_text:
+                break
+            
+            # Check CAPTCHA đã giải xong (không còn CAPTCHA element)
             try:
-                next_btn = driver.find_element(By.XPATH, '//button[contains(text(), "Next")]')
-                next_btn.click()
+                captcha_elements = driver.find_elements(By.XPATH, '//*[contains(@class, "captcha") or contains(@id, "captcha")]')
+                if not captcha_elements:
+                    # Không có CAPTCHA hoặc đã giải xong
+                    if wait_time >= 5:  # Chờ ít nhất 5s
+                        console.print("[dim]Không phát hiện CAPTCHA[/dim]")
+                        break
             except Exception:
                 pass
+            
+            if wait_time % 5 == 0:
+                console.print(f"[dim]Đang chờ... {wait_time}s[/dim]")
         
-        time.sleep(3)
+        time.sleep(2)
         
-        # Kiểm tra CAPTCHA
-        if "captcha" in driver.page_source.lower():
-            console.print("[yellow]Có CAPTCHA - Vui lòng giải thủ công![/yellow]")
-            input("Nhấn Enter sau khi giải xong CAPTCHA...")
+        # Kiểm tra lỗi rate limit
+        page_text = driver.page_source.lower()
+        if "maximum" in page_text and "attempts" in page_text:
+            console.print("[red]╔═══════════════════════════════════════════╗[/red]")
+            console.print("[red]║  LỖI: Maximum attempts reached!           ║[/red]")
+            console.print("[red]║  TikTok đã block IP của bạn.              ║[/red]")
+            console.print("[red]║                                           ║[/red]")
+            console.print("[red]║  Giải pháp:                               ║[/red]")
+            console.print("[red]║  1. Đổi VPN/IP                            ║[/red]")
+            console.print("[red]║  2. Dùng 3G/4G thay wifi                  ║[/red]")
+            console.print("[red]║  3. Chờ 30 phút rồi thử lại               ║[/red]")
+            console.print("[red]╚═══════════════════════════════════════════╝[/red]")
+            return False
         
         # Chờ OTP từ email
+        console.print("[dim]Đang chờ email OTP...[/dim]")
         otp = temp_mail.wait_for_otp(timeout=120)
         
         if not otp:
             # Thử nhập OTP thủ công
-            otp = Prompt.ask("Nhập OTP thủ công (nếu có)")
+            otp = Prompt.ask("Không nhận được OTP tự động. Nhập OTP thủ công (hoặc bỏ trống để bỏ qua)")
         
         if otp:
             console.print(f"[dim]Nhập OTP: {otp}[/dim]")
             try:
-                otp_input = driver.find_element(By.CSS_SELECTOR, 
-                    'input[name="code"], input[placeholder*="code"], input[placeholder*="mã"]'
-                )
-                otp_input.clear()
-                for char in otp:
-                    otp_input.send_keys(char)
-                    time.sleep(0.1)
+                # Tìm input OTP
+                otp_selectors = [
+                    'input[name="code"]',
+                    'input[placeholder*="code"]',
+                    'input[placeholder*="Code"]',
+                    'input[type="tel"]',
+                    'input[maxlength="6"]',
+                ]
+                
+                otp_input = None
+                for selector in otp_selectors:
+                    try:
+                        otp_input = driver.find_element(By.CSS_SELECTOR, selector)
+                        if otp_input.is_displayed():
+                            break
+                    except Exception:
+                        continue
+                
+                if otp_input:
+                    otp_input.clear()
+                    for char in otp:
+                        otp_input.send_keys(char)
+                        time.sleep(0.1)
+                    console.print("[green]Đã nhập OTP[/green]")
+                else:
+                    console.print("[yellow]Không tìm thấy ô nhập OTP, vui lòng nhập thủ công[/yellow]")
+                    
             except Exception as e:
                 console.print(f"[yellow]Lỗi nhập OTP: {e}[/yellow]")
         
@@ -486,6 +745,10 @@ def main():
     if success > 0:
         console.print(f"\n[dim]Accounts đã lưu vào: {ACCOUNTS_FILE}[/dim]")
         console.print(f"[dim]Cookies đã lưu vào: {COOKIES_DIR}[/dim]")
+    
+    # Cleanup profiles cũ
+    console.print("\n[dim]Dọn dẹp profiles cũ...[/dim]")
+    cleanup_old_profiles()
 
 
 if __name__ == "__main__":

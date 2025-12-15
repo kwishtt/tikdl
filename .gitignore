@@ -11,11 +11,13 @@ TikTok_Downloads/
 # Auto poster data
 posted_videos.json
 account_folders.json
+generated_accounts.json
+
+# Browser profiles và cookies
+chrome_profiles/
+cookies/
 
 # Cache files
-.download_cache.json
-.*_archive
-.*_archive.txt
 
 # Python
 __pycache__/
