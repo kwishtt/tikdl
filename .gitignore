@@ -1,0 +1,33 @@
+# TikTok Downloader - .gitignore
+
+# User data - không push lên
+user.txt
+*.txt
+
+# Downloaded files - folder chứa video đã tải
+TikTok_Downloads/
+
+# Cache files
+.download_cache.json
+.*_archive
+.*_archive.txt
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
