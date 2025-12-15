@@ -1,0 +1,7 @@
+# TikTok Auto Poster - Accounts
+# Mỗi dòng 1 account theo format: email:password
+# Dòng bắt đầu bằng # là comment
+
+# Ví dụ:
+# user1@gmail.com:password123
+# user2@gmail.com:mypassword

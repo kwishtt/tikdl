@@ -2,10 +2,15 @@
 
 # User data - không push lên
 user.txt
-*.txt
+accounts.txt
+hashtags.txt
 
 # Downloaded files - folder chứa video đã tải
 TikTok_Downloads/
+
+# Auto poster data
+posted_videos.json
+account_folders.json
 
 # Cache files
 .download_cache.json
