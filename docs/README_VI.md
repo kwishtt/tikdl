@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 [![yt-dlp](https://img.shields.io/badge/Powered%20by-yt--dlp-red?style=for-the-badge)](https://github.com/yt-dlp/yt-dlp)
 
-[English](README.md) | [Tiếng Việt](#tinh-nang)
+[English](../README.md) | [Tiếng Việt](#tinh-nang)
 
 </div>
 
@@ -66,8 +66,8 @@
 
 ### 1. Clone repository
 ```bash
-git clone https://github.com/kwishtt/tiktok-dl.git
-cd tiktok-dl
+git clone https://github.com/kwishtt/tikdl.git
+cd tikdl
 ```
 
 ### 2. Cài đặt dependencies
@@ -89,6 +89,14 @@ brew install ffmpeg
 # ffmpeg (Windows)
 # Tải từ https://ffmpeg.org/download.html
 ```
+
+---
+
+## Screenshot
+
+<div align="center">
+<img src="screenshots/image.png" alt="TikTok Downloader Screenshot" width="700"/>
+</div>
 
 ---
 
@@ -224,7 +232,7 @@ Pull requests được hoan nghênh! Với thay đổi lớn, vui lòng mở iss
 
 **Nếu thấy hữu ích, hãy cho repo một star!**
 
-[![Star](https://img.shields.io/github/stars/kwishtt/tiktok-dl?style=social)](https://github.com/kwishtt/tiktok-dl)
+[![Star](https://img.shields.io/github/stars/kwishtt/tikdl?style=social)](https://github.com/kwishtt/tikdl)
 
 Made with love by [kwishtt](https://github.com/kwishtt)
 

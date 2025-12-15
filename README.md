@@ -66,8 +66,8 @@
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/kwishtt/tiktok-dl.git
-cd tiktok-dl
+git clone https://github.com/kwishtt/tikdl.git
+cd tikdl
 ```
 
 ### 2. Install dependencies
@@ -89,6 +89,14 @@ brew install ffmpeg
 # ffmpeg (Windows)
 # Download from https://ffmpeg.org/download.html
 ```
+
+---
+
+## Screenshot
+
+<div align="center">
+<img src="docs/screenshots/image.png" alt="TikTok Downloader Screenshot" width="700"/>
+</div>
 
 ---
 
@@ -224,7 +232,7 @@ Pull requests are welcome! For major changes, please open an issue first.
 
 **If you find this useful, please give it a star!**
 
-[![Star](https://img.shields.io/github/stars/kwishtt/tiktok-dl?style=social)](https://github.com/kwishtt/tiktok-dl)
+[![Star](https://img.shields.io/github/stars/kwishtt/tikdl?style=social)](https://github.com/kwishtt/tikdl)
 
 Made with love by [kwishtt](https://github.com/kwishtt)
 
