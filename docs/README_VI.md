@@ -1,30 +1,59 @@
-# 🎵 TikTok Downloader
+<div align="center">
 
-Công cụ CLI đơn giản và mạnh mẽ để tải hàng loạt video và audio từ TikTok.
+# TikTok Downloader
 
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+**Công cụ CLI đơn giản và mạnh mẽ để tải hàng loạt video và audio từ TikTok.**
 
-> 🇬🇧 **English version**: [README.md](README.md)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![yt-dlp](https://img.shields.io/badge/Powered%20by-yt--dlp-red?style=for-the-badge)](https://github.com/yt-dlp/yt-dlp)
 
----
+[English](README.md) | [Tiếng Việt](#tinh-nang)
 
-## ✨ Tính năng
-
-| Tính năng | Mô tả |
-|-----------|-------|
-| 📦 **Tải hàng loạt** | Tải từ nhiều profile TikTok cùng lúc |
-| 🎬 **Video (MP4)** | Tải video chất lượng cao nhất |
-| 🎵 **Audio (MP3)** | Chỉ tải âm thanh |
-| 📁 **Tự động phân loại** | File được sắp xếp theo folder `@username` |
-| 🧠 **Smart Skip** | Bỏ qua user đã check gần đây (không có video mới) |
-| 🛡️ **Chống block** | Tích hợp delay và cơ chế retry |
-| 📊 **Progress Bar** | Thanh tiến trình đẹp với thời gian ước tính |
-| 🍪 **Hỗ trợ Cookie** | Dùng cookie trình duyệt để tránh bị giới hạn |
+</div>
 
 ---
 
-## 📋 Yêu cầu
+## Tính năng
+
+<table>
+<tr>
+<td><img src="https://img.shields.io/badge/-Tải%20hàng%20loạt-blue?style=flat-square" alt="Batch"/></td>
+<td>Tải từ nhiều profile TikTok cùng lúc</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Video%20MP4-red?style=flat-square" alt="Video"/></td>
+<td>Tải video chất lượng cao nhất</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Audio%20MP3-orange?style=flat-square" alt="Audio"/></td>
+<td>Chỉ tải âm thanh</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Tự%20động%20phân%20loại-purple?style=flat-square" alt="Organize"/></td>
+<td>File được sắp xếp theo folder <code>@username</code></td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Smart%20Skip-green?style=flat-square" alt="Skip"/></td>
+<td>Bỏ qua user đã check gần đây (không có video mới)</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Chống%20Block-yellow?style=flat-square" alt="Anti-block"/></td>
+<td>Tích hợp delay và cơ chế retry</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Progress%20Bar-cyan?style=flat-square" alt="Progress"/></td>
+<td>Thanh tiến trình đẹp với thời gian ước tính</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Cookie%20Support-pink?style=flat-square" alt="Cookie"/></td>
+<td>Dùng cookie trình duyệt để tránh bị giới hạn</td>
+</tr>
+</table>
+
+---
+
+## Yêu cầu
 
 - Python 3.8+
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp)
@@ -33,7 +62,7 @@ Công cụ CLI đơn giản và mạnh mẽ để tải hàng loạt video và a
 
 ---
 
-## 🚀 Cài đặt
+## Cài đặt
 
 ### 1. Clone repository
 ```bash
@@ -63,7 +92,7 @@ brew install ffmpeg
 
 ---
 
-## 📖 Cách sử dụng
+## Cách sử dụng
 
 ### 1. Tạo file danh sách user
 Tạo file `user.txt` với các URL profile TikTok (mỗi dòng 1 URL):
@@ -80,11 +109,11 @@ python3 ytdl.py
 
 ### 3. Chọn định dạng
 ```
-📦 Chọn định dạng tải:
+Chọn định dạng tải:
 
-  [1]  🎬 Video (MP4)    Chỉ tải video
-  [2]  🎵 Audio (MP3)    Chỉ tải nhạc
-  [3]  🎬🎵 Cả hai       Tải video + nhạc
+  [1]  Video (MP4)    Chỉ tải video
+  [2]  Audio (MP3)    Chỉ tải nhạc
+  [3]  Cả hai         Tải video + nhạc
 
 Nhập lựa chọn [1/2/3] (1): 
 ```
@@ -98,7 +127,7 @@ Tool sẽ:
 
 ---
 
-## 📁 Cấu trúc thư mục
+## Cấu trúc thư mục
 
 ```
 TikTok_Downloads/
@@ -113,7 +142,7 @@ TikTok_Downloads/
 
 ---
 
-## ⚙️ Cấu hình
+## Cấu hình
 
 Chỉnh sửa các biến trong `ytdl.py`:
 
@@ -128,7 +157,7 @@ SKIP_HOURS = 24        # Bỏ qua nếu đã check trong X giờ
 
 ---
 
-## 🛡️ Tính năng chống Block
+## Tính năng chống Block
 
 | Tính năng | Mô tả |
 |-----------|-------|
@@ -141,13 +170,13 @@ SKIP_HOURS = 24        # Bỏ qua nếu đã check trong X giờ
 
 ---
 
-## 📊 Smart Skip
+## Smart Skip
 
 Tool ghi nhớ thời điểm check mỗi user. Nếu:
 - User đã check trong vòng 24 giờ, VÀ
 - Lần trước không có video mới
 
-→ User sẽ được **bỏ qua** để tiết kiệm thời gian.
+User sẽ được **bỏ qua** để tiết kiệm thời gian.
 
 Để buộc tải lại tất cả, xóa file cache:
 ```bash
@@ -156,7 +185,7 @@ rm TikTok_Downloads/.download_cache.json
 
 ---
 
-## 🔧 Xử lý lỗi
+## Xử lý lỗi
 
 ### Lỗi "Rate limited"
 - Đổi sang mạng di động (3G/4G)
@@ -179,22 +208,24 @@ ffmpeg -version
 
 ---
 
-## 📄 Giấy phép
+## Giấy phép
 
 MIT License - thoải mái sử dụng và chỉnh sửa!
 
 ---
 
-## 🤝 Đóng góp
+## Đóng góp
 
 Pull requests được hoan nghênh! Với thay đổi lớn, vui lòng mở issue trước.
 
 ---
 
-## ⭐ Ủng hộ
+<div align="center">
 
-Nếu thấy hữu ích, hãy cho repo một ⭐ nhé!
+**Nếu thấy hữu ích, hãy cho repo một star!**
 
----
+[![Star](https://img.shields.io/github/stars/kwishtt/tiktok-dl?style=social)](https://github.com/kwishtt/tiktok-dl)
 
-Made with ❤️ by [kwishtt](https://github.com/kwishtt)
+Made with love by [kwishtt](https://github.com/kwishtt)
+
+</div>

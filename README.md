@@ -1,30 +1,59 @@
-# 🎵 TikTok Downloader
+<div align="center">
 
-A simple and powerful CLI tool to batch download TikTok videos and audio.
+# TikTok Downloader
 
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://python.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+**A simple and powerful CLI tool to batch download TikTok videos and audio.**
 
-> 🇻🇳 **Vietnamese version**: [README_VI.md](README_VI.md)
+[![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://python.org)
+[![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
+[![yt-dlp](https://img.shields.io/badge/Powered%20by-yt--dlp-red?style=for-the-badge)](https://github.com/yt-dlp/yt-dlp)
 
----
+[English](#features) | [Tiếng Việt](docs/README_VI.md)
 
-## ✨ Features
-
-| Feature | Description |
-|---------|-------------|
-| 📦 **Batch Download** | Download from multiple TikTok profiles at once |
-| 🎬 **Video (MP4)** | Download highest quality videos |
-| 🎵 **Audio (MP3)** | Extract audio only |
-| 📁 **Auto-organize** | Files organized by `@username` folders |
-| 🧠 **Smart Skip** | Skip recently checked users (no new videos) |
-| 🛡️ **Anti-block** | Built-in delays and retry mechanism |
-| 📊 **Progress Bar** | Beautiful progress tracking with ETA |
-| 🍪 **Cookie Support** | Uses browser cookies to avoid rate limits |
+</div>
 
 ---
 
-## 📋 Requirements
+## Features
+
+<table>
+<tr>
+<td><img src="https://img.shields.io/badge/-Batch%20Download-blue?style=flat-square" alt="Batch"/></td>
+<td>Download from multiple TikTok profiles at once</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Video%20MP4-red?style=flat-square" alt="Video"/></td>
+<td>Download highest quality videos</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Audio%20MP3-orange?style=flat-square" alt="Audio"/></td>
+<td>Extract audio only</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Auto%20Organize-purple?style=flat-square" alt="Organize"/></td>
+<td>Files organized by <code>@username</code> folders</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Smart%20Skip-green?style=flat-square" alt="Skip"/></td>
+<td>Skip recently checked users (no new videos)</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Anti%20Block-yellow?style=flat-square" alt="Anti-block"/></td>
+<td>Built-in delays and retry mechanism</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Progress%20Bar-cyan?style=flat-square" alt="Progress"/></td>
+<td>Beautiful progress tracking with ETA</td>
+</tr>
+<tr>
+<td><img src="https://img.shields.io/badge/-Cookie%20Support-pink?style=flat-square" alt="Cookie"/></td>
+<td>Uses browser cookies to avoid rate limits</td>
+</tr>
+</table>
+
+---
+
+## Requirements
 
 - Python 3.8+
 - [yt-dlp](https://github.com/yt-dlp/yt-dlp)
@@ -33,7 +62,7 @@ A simple and powerful CLI tool to batch download TikTok videos and audio.
 
 ---
 
-## 🚀 Installation
+## Installation
 
 ### 1. Clone the repository
 ```bash
@@ -63,7 +92,7 @@ brew install ffmpeg
 
 ---
 
-## 📖 Usage
+## Usage
 
 ### 1. Create a user list file
 Create `user.txt` with TikTok profile URLs (one per line):
@@ -80,11 +109,11 @@ python3 ytdl.py
 
 ### 3. Select format
 ```
-📦 Choose download format:
+Choose download format:
 
-  [1]  🎬 Video (MP4)    Video only
-  [2]  🎵 Audio (MP3)    Audio only
-  [3]  🎬🎵 Both         Video + Audio
+  [1]  Video (MP4)    Video only
+  [2]  Audio (MP3)    Audio only
+  [3]  Both           Video + Audio
 
 Enter choice [1/2/3] (1): 
 ```
@@ -98,7 +127,7 @@ The tool will:
 
 ---
 
-## 📁 Output Structure
+## Output Structure
 
 ```
 TikTok_Downloads/
@@ -113,7 +142,7 @@ TikTok_Downloads/
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 Edit these variables in `ytdl.py`:
 
@@ -128,7 +157,7 @@ SKIP_HOURS = 24        # Skip if checked within X hours
 
 ---
 
-## 🛡️ Anti-Block Features
+## Anti-Block Features
 
 | Feature | Description |
 |---------|-------------|
@@ -141,13 +170,13 @@ SKIP_HOURS = 24        # Skip if checked within X hours
 
 ---
 
-## 📊 Smart Skip
+## Smart Skip
 
 The tool remembers when each user was last checked. If:
 - User was checked within 24 hours, AND
 - No new videos were found last time
 
-→ User will be **skipped** to save time.
+The user will be **skipped** to save time.
 
 To force re-download all users, delete:
 ```bash
@@ -156,7 +185,7 @@ rm TikTok_Downloads/.download_cache.json
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### "Rate limited" error
 - Switch to mobile data (3G/4G)
@@ -179,22 +208,24 @@ ffmpeg -version
 
 ---
 
-## 📄 License
+## License
 
 MIT License - feel free to use and modify!
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 Pull requests are welcome! For major changes, please open an issue first.
 
 ---
 
-## ⭐ Star History
+<div align="center">
 
-If you find this useful, please give it a ⭐!
+**If you find this useful, please give it a star!**
 
----
+[![Star](https://img.shields.io/github/stars/kwishtt/tiktok-dl?style=social)](https://github.com/kwishtt/tiktok-dl)
 
-Made with ❤️ by [kwishtt](https://github.com/kwishtt)
+Made with love by [kwishtt](https://github.com/kwishtt)
+
+</div>
