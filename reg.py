@@ -34,7 +34,7 @@ try:
     from rich.panel import Panel
     from rich.prompt import Prompt
 except ImportError:
-    print("Cần cài đặt: pip install selenium webdriver-manager rich requests")
+    print("Cần cài đặt thư viện, gõ: pip install selenium webdriver-manager rich requests")
     sys.exit(1)
 
 # ========== CONFIG ==========
@@ -46,6 +46,48 @@ GENERATED_FILE = Path(__file__).parent / "generated_accounts.json"
 
 # Temp mail API (mail.tm)
 MAIL_API = "https://api.mail.tm"
+
+# Chế độ dùng email cá nhân (True = hỏi email/password, False = dùng temp mail)
+USE_PERSONAL_EMAIL = False
+
+# Mobile devices để emulate - bypass TikTok fingerprinting
+MOBILE_DEVICES = [
+    {
+        "name": "BlackBerry Z30",
+        "width": 360,
+        "height": 640,
+        "pixelRatio": 2.0,
+        "userAgent": "Mozilla/5.0 (BB10; Touch) AppleWebKit/537.35+ (KHTML, like Gecko) Version/10.3.3.2205 Mobile Safari/537.35+"
+    },
+    {
+        "name": "Nexus 5",
+        "width": 360,
+        "height": 640,
+        "pixelRatio": 3.0,
+        "userAgent": "Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+    },
+    {
+        "name": "Galaxy S8",
+        "width": 360,
+        "height": 740,
+        "pixelRatio": 4.0,
+        "userAgent": "Mozilla/5.0 (Linux; Android 8.0.0; SM-G950F) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+    },
+    {
+        "name": "iPhone 12 Pro",
+        "width": 390,
+        "height": 844,
+        "pixelRatio": 3.0,
+        "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1"
+    },
+    {
+        "name": "Pixel 5",
+        "width": 393,
+        "height": 851,
+        "pixelRatio": 2.75,
+        "userAgent": "Mozilla/5.0 (Linux; Android 12; Pixel 5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Mobile Safari/537.36"
+    },
+]
 
 
 # ========== TEMP MAIL FUNCTIONS ==========
@@ -62,10 +104,12 @@ class TempMail:
     def get_domains(self) -> list:
         """Lấy danh sách domains có sẵn"""
         try:
-            resp = self.session.get(f"{MAIL_API}/domains")
+            resp = self.session.get(f"{MAIL_API}/domains", timeout=15)
             if resp.status_code == 200:
                 data = resp.json()
-                return [d["domain"] for d in data.get("hydra:member", [])]
+                domains = [d["domain"] for d in data.get("hydra:member", [])]
+                console.print(f"[dim]Domains: {domains}[/dim]")
+                return domains
         except Exception as e:
             console.print(f"[red]Lỗi lấy domains: {e}[/red]")
         return []
@@ -90,13 +134,14 @@ class TempMail:
                 json={
                     "address": self.email,
                     "password": self.password
-                }
+                },
+                timeout=15
             )
             
             if resp.status_code == 201:
                 data = resp.json()
                 self.account_id = data.get("id")
-                console.print(f"[green]Đã tạo email: {self.email}[/green]")
+                console.print(f"[green]📧 Email: {self.email}[/green]")
                 return self.login()
             else:
                 console.print(f"[red]Lỗi tạo email: {resp.text}[/red]")
@@ -114,7 +159,8 @@ class TempMail:
                 json={
                     "address": self.email,
                     "password": self.password
-                }
+                },
+                timeout=15
             )
             
             if resp.status_code == 200:
@@ -133,22 +179,22 @@ class TempMail:
     def get_messages(self) -> list:
         """Lấy danh sách emails"""
         try:
-            resp = self.session.get(f"{MAIL_API}/messages")
+            resp = self.session.get(f"{MAIL_API}/messages", timeout=15)
             if resp.status_code == 200:
                 data = resp.json()
                 return data.get("hydra:member", [])
         except Exception as e:
-            console.print(f"[red]Lỗi lấy messages: {e}[/red]")
+            console.print(f"[dim]Lỗi lấy messages: {e}[/dim]")
         return []
     
     def get_message(self, message_id: str) -> dict:
         """Lấy nội dung 1 email"""
         try:
-            resp = self.session.get(f"{MAIL_API}/messages/{message_id}")
+            resp = self.session.get(f"{MAIL_API}/messages/{message_id}", timeout=15)
             if resp.status_code == 200:
                 return resp.json()
         except Exception as e:
-            console.print(f"[red]Lỗi lấy message: {e}[/red]")
+            console.print(f"[dim]Lỗi lấy message: {e}[/dim]")
         return {}
     
     def wait_for_otp(self, timeout: int = 120) -> str:
@@ -172,7 +218,9 @@ class TempMail:
                 sender = msg.get("from", {}).get("address", "").lower()
                 subject = msg.get("subject", "").lower()
                 
-                if "tiktok" in sender or "tiktok" in subject or "verify" in subject:
+                console.print(f"[dim]📬 Email từ: {sender} | Subject: {subject[:50]}[/dim]")
+                
+                if "tiktok" in sender or "tiktok" in subject or "verify" in subject or "code" in subject:
                     # Lấy nội dung email
                     full_msg = self.get_message(msg_id)
                     text = full_msg.get("text", "") or full_msg.get("html", "")
@@ -182,13 +230,13 @@ class TempMail:
                     otp_match = re.search(r'\b(\d{6})\b', text)
                     if otp_match:
                         otp = otp_match.group(1)
-                        console.print(f"[green]Nhận được OTP: {otp}[/green]")
+                        console.print(f"[bold green]✓ Nhận được OTP: {otp}[/bold green]")
                         return otp
             
             time.sleep(3)
             elapsed = int(time.time() - start_time)
-            if elapsed % 10 == 0:
-                console.print(f"[dim]Đang chờ... {elapsed}s[/dim]")
+            if elapsed % 10 == 0 and elapsed > 0:
+                console.print(f"[dim]⏳ Đang chờ OTP... {elapsed}s[/dim]")
         
         console.print("[red]Hết thời gian chờ OTP[/red]")
         return ""
@@ -700,51 +748,86 @@ def main():
     """Main function"""
     console.print(Panel(
         "[bold magenta]TikTok Account Generator[/bold magenta]\n"
-        "[dim]Tạo tài khoản TikTok với temp mail[/dim]",
+        f"[dim]{'📧 Chế độ Email cá nhân' if USE_PERSONAL_EMAIL else '📨 Chế độ Temp mail'}[/dim]\n"
+        "[dim]📱 Mobile Emulation ON - Bypass fingerprinting[/dim]",
         border_style="magenta"
     ))
     
-    count = Prompt.ask("Số tài khoản muốn tạo", default="1")
-    
-    try:
-        count = int(count)
-    except ValueError:
-        count = 1
-    
-    success = 0
-    failed = 0
-    
-    for i in range(count):
-        console.print(f"\n[bold]{'='*50}[/bold]")
-        console.print(f"[bold]Tạo tài khoản {i+1}/{count}[/bold]")
+    if USE_PERSONAL_EMAIL:
+        # Chế độ dùng email cá nhân
+        console.print("\n[bold cyan]Nhập thông tin email cá nhân:[/bold cyan]")
+        personal_email = Prompt.ask("Email")
         
-        # Tạo temp mail
-        temp_mail = TempMail()
-        if not temp_mail.create_account():
-            console.print("[red]Không tạo được temp mail, bỏ qua...[/red]")
-            failed += 1
-            continue
+        if not personal_email or "@" not in personal_email:
+            console.print("[red]Email không hợp lệ![/red]")
+            return
+        
+        console.print(f"\n[dim]Email: {personal_email}[/dim]")
+        
+        # Tạo mock TempMail object với email cá nhân
+        class PersonalMail:
+            def __init__(self, email: str):
+                self.email = email
+                self.password = None
+                self.token = None
+            
+            def wait_for_otp(self, timeout: int = 120) -> str:
+                """Chờ user nhập OTP thủ công"""
+                console.print(f"\n[bold yellow]📧 Kiểm tra email: {self.email}[/bold yellow]")
+                console.print("[yellow]Tìm email từ TikTok và nhập OTP 6 số:[/yellow]")
+                otp = Prompt.ask("Nhập OTP", default="")
+                return otp.strip()
+        
+        mail = PersonalMail(personal_email)
         
         # Đăng ký TikTok
-        if register_tiktok(temp_mail):
-            success += 1
+        if register_tiktok(mail):
+            console.print("[bold green]✓ Đăng ký thành công![/bold green]")
         else:
-            failed += 1
+            console.print("[bold red]✗ Đăng ký thất bại[/bold red]")
+    else:
+        # Chế độ temp mail (code cũ)
+        count = Prompt.ask("Số tài khoản muốn tạo", default="1")
         
-        # Delay giữa các account
-        if i < count - 1:
-            delay = random.randint(30, 60)
-            console.print(f"[dim]Chờ {delay}s trước account tiếp theo...[/dim]")
-            time.sleep(delay)
-    
-    console.print(f"\n[bold]{'='*50}[/bold]")
-    console.print(f"[bold]Kết quả:[/bold]")
-    console.print(f"  [green]Thành công: {success}[/green]")
-    console.print(f"  [red]Thất bại: {failed}[/red]")
-    
-    if success > 0:
-        console.print(f"\n[dim]Accounts đã lưu vào: {ACCOUNTS_FILE}[/dim]")
-        console.print(f"[dim]Cookies đã lưu vào: {COOKIES_DIR}[/dim]")
+        try:
+            count = int(count)
+        except ValueError:
+            count = 1
+        
+        success = 0
+        failed = 0
+        
+        for i in range(count):
+            console.print(f"\n[bold]{'='*50}[/bold]")
+            console.print(f"[bold]Tạo tài khoản {i+1}/{count}[/bold]")
+            
+            # Tạo temp mail
+            temp_mail = TempMail()
+            if not temp_mail.create_account():
+                console.print("[red]Không tạo được temp mail, bỏ qua...[/red]")
+                failed += 1
+                continue
+            
+            # Đăng ký TikTok
+            if register_tiktok(temp_mail):
+                success += 1
+            else:
+                failed += 1
+            
+            # Delay giữa các account
+            if i < count - 1:
+                delay = random.randint(30, 60)
+                console.print(f"[dim]Chờ {delay}s trước account tiếp theo...[/dim]")
+                time.sleep(delay)
+        
+        console.print(f"\n[bold]{'='*50}[/bold]")
+        console.print(f"[bold]Kết quả:[/bold]")
+        console.print(f"  [green]Thành công: {success}[/green]")
+        console.print(f"  [red]Thất bại: {failed}[/red]")
+        
+        if success > 0:
+            console.print(f"\n[dim]Accounts đã lưu vào: {ACCOUNTS_FILE}[/dim]")
+            console.print(f"[dim]Cookies đã lưu vào: {COOKIES_DIR}[/dim]")
     
     # Cleanup profiles cũ
     console.print("\n[dim]Dọn dẹp profiles cũ...[/dim]")
